@@ -4,8 +4,6 @@ import os
 import random
 import shutil
 
-import numpy as np
-
 from utils import get_module_logger
 
 
@@ -19,15 +17,17 @@ def split(source, destination):
         - destination [str]: destination data directory, contains 3 sub folders: train / val / test
     """
     # Get dataset names
-    dataset_names = [dataset_name for dataset_name in glob.glob(os.path.join(source, '*.tfrecord'))]
+    dataset_names = [
+        dataset_name for dataset_name in glob.glob(os.path.join(source, "*.tfrecord"))
+    ]
     print(dataset_names)
 
     # Create directories
-    train_dir = os.path.join(destination, 'train')
+    train_dir = os.path.join(destination, "train")
     os.makedirs(train_dir, exist_ok=True)
-    val_dir = os.path.join(destination, 'val')
+    val_dir = os.path.join(destination, "val")
     os.makedirs(val_dir, exist_ok=True)
-    test_dir = os.path.join(destination, 'test')
+    test_dir = os.path.join(destination, "test")
     os.makedirs(test_dir, exist_ok=True)
 
     # Spllit data 7:2:1
@@ -49,13 +49,15 @@ def split(source, destination):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Split data into training / validation / testing')
-    parser.add_argument('--source', required=True,
-                        help='source data directory')
-    parser.add_argument('--destination', required=True,
-                        help='destination data directory')
+    parser = argparse.ArgumentParser(
+        description="Split data into training / validation / testing"
+    )
+    parser.add_argument("--source", required=True, help="source data directory")
+    parser.add_argument(
+        "--destination", required=True, help="destination data directory"
+    )
     args = parser.parse_args()
 
     logger = get_module_logger(__name__)
-    logger.info('Creating splits...')
+    logger.info("Creating splits...")
     split(args.source, args.destination)
