@@ -216,11 +216,117 @@ Result from the reference experiment is as follow.
 As you can see, the total loss is above 2.00 and I consider it's quite bad numbers.
 AP numbers are also pretty bad like below and almost no object is detected.
 
-![reference_ap)(pics/reference_ap.png)
+![reference_ap](pics/reference_ap.png)
 
-There's no objects found from test datasets like below animation.
+There's no objects found from test datasets like the following animation.
 ![animation_reference](pics/animation_reference.gif)
 
 
 #### Improve on the reference
-This section should highlight the different strategies you adopted to improve your model. It should contain relevant figures and details of your findings.
+
+##### Experiment4
+
+After several tries, I could make a breakthrough by adding some data augments options in [pipeline_new.config](experiments/experiment4/pipeline_new.config) like below.
+
+```
+  data_augmentation_options {
+      random_rgb_to_gray {
+        probability: 0.3
+      }
+  }
+  data_augmentation_options {
+      random_distort_color {
+        color_ordering: 1
+      }
+  }
+  data_augmentation_options {
+      random_adjust_brightness {
+        max_delta: 0.4
+      }
+  }
+  data_augmentation_options {
+      random_adjust_contrast {
+        min_delta: 0.8
+        max_delta: 1.25
+      }
+  }
+  data_augmentation_options {
+      random_adjust_hue {
+        max_delta: 0.04
+      }
+  }
+  data_augmentation_options {
+      random_adjust_saturation {
+        min_delta: 0.8
+        max_delta: 1.25
+      }
+  }
+```
+
+Those data augment could added more samples for cloudy or night scenes like below eamples and it clearly help reducing the loss.
+
+![augment1](pics/augment1.png)
+![augment2](pics/augment2.png)
+
+And the result loss is like below. (The pink lines indicate numbers from a new model.)
+
+![experiment4_loss](pics/experiment4_loss.png)
+
+But still AP is not enough and nothing was detected from the test datasets.
+![experiment4_ap](pics/experiment4_ap.png)
+
+##### Experiment7
+
+Here's the pipeline config for this experiment: [pipeline_new.config](experiments/experiment7/pipeline_new.config)
+
+I suspect the optimizer so that it always sink to a local minima.
+After some trial-and-errors, I found that Adam optimizer looked quite promising with the below change.
+
+```
+  optimizer {
+    adam_optimizer {
+      learning_rate {
+        constant_learning_rate {
+          learning_rate: 0.001
+        }
+      }
+    }
+    use_moving_average: false
+  }
+```
+
+The total loss wasn't that improved much at the end and AP was not very good this time. (The purple lines indicate numbers from the new model)
+But it was quite stable at the initial and middle part of epochs.
+
+![experiment7_loss](pics/experiment7_loss.png)
+
+
+##### Experiment8
+
+Here's the pipeline config for this experiment: [pipeline_new.config](experiments/experiment8/pipeline_new.config)
+
+At the final experiment, I have focused on reducing the loss at the later part of training and added decaying of learning rate like below.
+
+```
+  optimizer {
+    adam_optimizer {
+      learning_rate {
+        exponential_decay_learning_rate {
+          initial_learning_rate: 0.001
+          decay_steps: 700
+        }
+      }
+    }
+    use_moving_average: false
+  }
+```
+
+And it finally shows a real progress on loss and AP like below. (The orange lines indicate numbers from the new model)
+
+![experiment8_loss](pics/experiment8_loss.png)
+
+![experiment8_ap](pics/experiment8_ap.png)
+
+Here's the animated inference result from the last experiment.
+
+![animation_experiment8.gif](pics/animation_experiment8.gif)
