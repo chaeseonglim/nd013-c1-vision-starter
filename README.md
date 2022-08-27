@@ -138,23 +138,89 @@ Finally, you can create a video of your model's inferences for any tf record fil
 python inference_video.py --labelmap_path label_map.pbtxt --model_path experiments/reference/exported/saved_model --tf_record_path /data/waymo/testing/segment-12200383401366682847_2552_140_2572_140_with_camera_labels.tfrecord --config_path experiments/reference/pipeline_new.config --output_path animation.gif
 ```
 
-## Submission Template
-
-### Project overview
-This section should contain a brief description of the project and what we are trying to achieve. Why is object detection such an important component of self driving car systems?
+## Project overview
+This project uses deep learning algorithms to detect objects from image datasets. 
 
 ### Set up
-This section should contain a brief description of the steps to follow to run the code for this repository.
+I used my local machine to train the network model. Here's the brief description how I set up a docker for the project.
+
+#### How to set up the docker.
+I used [docker file](build/Dockerfile) in this repo. 
+It already have the most of needed libraries but I had to change a few things during the test.
+
+##### Build
+Build the image with:
+
+```bash
+docker build -t project-dev -f Dockerfile .
+```
+
+Create a container with:
+
+```bash
+docker run --gpus all -v <PATH TO LOCAL PROJECT FOLDER>:/app/project/ --network=host -ti project-dev bash
+```
+
+
+##### Set up
+Once in container, you will need to log in to google cloud, which you can easily do by running:
+
+```bash
+gcloud auth login
+```
+
+Also I needed to uninstall keras from PIP to make tensorflow works correctly.
+```bash
+pip uninstall keras
+```
+
+You can run tensorboard using the below command.
+```bash
+python -m tensorboard.main --logdir_spec=ref:experiments/reference/,e4:experiments/experiment4 --bind_all
+```
+
+You can run jupyter notebook using the below command.
+```bash
+jupyter notebook --port 3002 --ip=0.0.0.0 --allow-root
+```
 
 ### Dataset
 #### Dataset analysis
-This section should contain a quantitative and qualitative description of the dataset. It should include images, charts and other visualizations.
+Dataset has various street images which includes vehicles, pedestrians and cyclists.
+Images were taken in the variou weather, time condition as you can see below. (vehicles in red, pedestrians in blue, cyclist in green)
+
+![1](pics/1.png)
+![2](pics/2.png)
+![3](pics/3.png)
+![4](pics/4.png)
+![5](pics/5.png)
+![6](pics/6.png)
+![7](pics/7.png)
+![8](pics/8.png)
+![9](pics/9.png)
+![10](pics/10.png)
+
+And I randomly selected 100 images and calculated the distribution of labels like below.
+![chart](pics/label_distribution.png)
+
 #### Cross validation
-This section should detail the cross validation strategy and justify your approach.
+I splited the downloaded datasets into training, validation, and test sets by 7:2:1 ratio. 
+As far as I know, it's a widely used ratio.
 
 ### Training
 #### Reference experiment
-This section should detail the results of the reference experiment. It should includes training metrics and a detailed explanation of the algorithm's performances.
+Result from the reference experiment is as follow.
+
+![reference_loss](pics/reference_loss.png)
+
+As you can see, the total loss is above 2.00 and I consider it's quite bad numbers.
+AP numbers are also pretty bad like below and almost no object is detected.
+
+![reference_ap)(pics/reference_ap.png)
+
+There's no objects found from test datasets like below animation.
+![animation_reference](pics/animation_reference.gif)
+
 
 #### Improve on the reference
 This section should highlight the different strategies you adopted to improve your model. It should contain relevant figures and details of your findings.
